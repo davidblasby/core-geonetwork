@@ -112,6 +112,50 @@
             return langCode;
           }
 
+          //since scope.languages is a dictionary, we give it an explicit order
+          // Order is based on occurrence in the element.
+          // This is more aesthetically pleasing (the nav pills are in the same order as the items)
+          function computeLanguageOrdered(languages,element) {
+              //support functions ---
+              // find a key in a list
+              // [{"key":...}
+              function findKey(list,key) {
+                  var found = false;
+                  for (var item in list) {
+                      if (result[item]["key"] == key)
+                        found = true;
+                  }
+                  return found;
+              }
+              // find a key in a dictionary by value
+              function getKeyByValue(dictionary, value) {
+                 for(var key in dictionary ) {
+                        if(dictionary[key] === value )
+                            return key;
+                 }
+              }
+
+            //find the order of items (i.e textarea) underneath
+            var result = [];
+            $(element).find(formFieldsSelector).each(function() {
+              var key = getKeyByValue(languages,"#"+this.lang);
+              if (!findKey(result,key)) // in lookups (i.e. country) there could be multiples of the same things
+                result.push({"key":getKeyByValue(languages,"#"+this.lang),"value":"#"+this.lang});
+            });
+
+            //there might be missing ones in the result list - add them now
+            for (var key in languages) {
+                //do we have this key already?
+                var found = findKey(result,key);
+                if (!found) {
+                     result.push( {"key":key,"value":languages[key]});
+                }
+            }
+            return result;
+          };
+
+          scope.languagesOrdered = computeLanguageOrdered(scope.languages,element);
+
           $timeout(function() {
             scope.expanded = scope.expanded === 'true';
 
